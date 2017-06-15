@@ -18,10 +18,11 @@ except ImportError:
 
 
 class Stopper:
-    __slots__ = ["stop"]
+    __slots__ = ["stop", "sleep"]
 
-    def __init__(self):
+    def __init__(self, sleep):
         self.stop = False
+        self.sleep = sleep
 
 
 class Plugin(object):
@@ -61,11 +62,11 @@ class Plugin(object):
     def schedule(self, seconds):
         def decor(func):
             async def wrapper(*args, **kwargs):
-                stopper = Stopper()
+                stopper = Stopper(seconds)
                 while not stopper.stop:
                     # Спим указанное кол-во секунд
                     # При этом другие корутины могут работать
-                    await asyncio.sleep(seconds)
+                    await asyncio.sleep(stopper.sleep)
                     # Выполняем саму функцию
                     await func(stopper, *args, **kwargs)
 

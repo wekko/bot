@@ -8,30 +8,27 @@ plugin = Plugin('Блокнот',
                 need_db=True)
 
 
+class Memo(BaseModel):
+    uid = peewee.BigIntegerField(unique=True)
+    text = peewee.TextField(null=True)
+
+Memo.create_table(True)
+
+
 @plugin.on_command('запомни', 'запиши')
 async def memo_write(msg, args):
-    string = ' '.join(args)
-
-    user = await get_or_none(User, uid=msg.user_id)
-
-    if not user:
-        return await msg.answer('Вас не существует или база данных бота не настроена.')
-
-    user.memory = string
-
-    await db.update(user)
+    mem, created = await db.get_or_create(Memo, uid=msg.user_id)
+    mem.text = msg.text
+    await db.update(mem)
 
     await msg.answer('Вроде запомнил...')
 
 
 @plugin.on_command('напомни', 'вспомни')
 async def memo_read(msg, args):
-    user = await get_or_none(User, uid=msg.user_id)
+    mem, created = await db.get_or_create(Memo, uid=msg.user_id)
 
-    if not user:
-        return await msg.answer('Вас не существует или база данных бота не настроена.')
-
-    if not user.memory:
+    if not mem.text:
         await msg.answer('Я ничего не вспомнил!')
     else:
-        await msg.answer('Вот что я вспомнил:\n' + user.memory)
+        await msg.answer('Вот что я вспомнил:\n' + mem.text)

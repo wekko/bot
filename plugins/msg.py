@@ -10,6 +10,22 @@ plugin = Plugin("Отправка сообщения",
                 need_db=True)
 
 
+class Ignore(BaseModel):
+    ignored = peewee.ForeignKeyField(User, related_name='ignored_by')
+    ignored_by = peewee.ForeignKeyField(User, related_name='ignored')
+
+    class Meta:
+        indexes = (
+            (('ignored', 'ignored_by'), True),
+        )
+
+
+class DoNotDisturb(BaseModel):
+    user_id = peewee.BigIntegerField(unique=True)
+
+Ignore.create_table(True)
+DoNotDisturb.create_table(True)
+
 DISABLED = ('https', 'http', 'com', 'www', 'ftp', '://')
 
 
@@ -50,8 +66,7 @@ async def anonymously(msg, args):
     if await get_or_none(Ignore, ignored=sender_id, ignored_by=uid):
         return await msg.answer('Вы находитесь в чёрном списке у этого пользователя!')
 
-    user = await get_or_none(User, uid=uid)
-    if user and user.do_not_disturb:
+    if await get_or_none(DoNotDisturb, user_id=uid):
         return await msg.answer('Этот пользователь попросил его не беспокоить!')
 
     data = ' '.join(args)
@@ -88,8 +103,7 @@ async def to_admin(msg, args):
         if await get_or_none(Ignore, ignored=sender_id, ignored_by=uid):
             return await msg.answer('Вы находитесь в чёрном списке у этого пользователя!')
 
-        user = await get_or_none(User, uid=uid)
-        if user and user.do_not_disturb:
+        if await get_or_none(DoNotDisturb, user_id=uid):
             return await msg.answer('Этот пользователь попросил его не беспокоить!')
 
         data = ' '.join(args)
@@ -136,8 +150,7 @@ async def write_msg(msg, args):
     if await get_or_none(Ignore, ignored=sender_id, ignored_by=uid):
         return await msg.answer('Вы находитесь в чёрном списке у этого пользователя!')
 
-    user = await get_or_none(User, uid=uid)
-    if user and user.do_not_disturb:
+    if await get_or_none(DoNotDisturb, user_id=uid):
         return await msg.answer('Этот пользователь попросил его не беспокоить!')
 
     data = ' '.join(args)
@@ -160,7 +173,6 @@ async def write_msg(msg, args):
     if not result:
         return await msg.answer('Сообщение не удалось отправить!')
     await msg.answer('Сообщение успешно отправлено!')
-
 
 
 @plugin.on_command('скрыть')
@@ -209,27 +221,13 @@ async def show(msg, unignore):
 
 @plugin.on_command('не беспокоить')
 async def do_not_disturb(msg, args):
-    user = await get_or_none(User, uid=msg.user_id)
-
-    if not user:
-        return await msg.answer('Вы не существуете!\n(или у бота проблемы с базой данных)')
-
-    user.do_not_disturb = True
-
-    await db.update(user)
+    await db.get_or_create(DoNotDisturb, user_id=msg.user_id)
 
     await msg.answer('Вы не будете получать сообщения!')
 
 
 @plugin.on_command('беспокоить')
 async def do_disturb(msg, args):
-    user = await get_or_none(User, uid=msg.user_id)
-
-    if not user:
-        return await msg.answer('Вы не существуете!\n(или у бота проблемы с базой данных)')
-
-    user.do_not_disturb = False
-
-    await db.update(user)
+    await db.execute(DoNotDisturb.delete().where(DoNotDisturb.user_id == msg.user_id))
 
     await msg.answer('Вы будете получать все сообщения!')

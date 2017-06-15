@@ -14,15 +14,28 @@ plugin = Plugin('Посылка для пользователей',
 NOT_IN_LIST = "Вы не в списке!"
 
 
+class MailMessage(BaseModel):
+    text = peewee.TextField(null=True)
+
+
+class ListForMail(BaseModel):
+    user_id = peewee.BigIntegerField(unique=True)
+
+    date = peewee.DateTimeField(default=datetime.datetime.now())
+
+MailMessage.create_table(True)
+ListForMail.create_table(True)
+
+
 @plugin.on_command('объявление')
 async def get(msg, args):
     if await get_or_none(ListForMail, user_id=msg.user_id):
-        status, created = await db.get_or_create(BotStatus, id=0)
+        message, created = await db.get_or_create(MailMessage, id=0)
 
-        if not status.mail_data:
+        if not message.text:
             return await msg.answer("Пусто!")
 
-        await msg.answer(status.mail_data)
+        await msg.answer(message.text)
 
     else:
         await msg.answer(NOT_IN_LIST)
@@ -33,9 +46,9 @@ async def leave(msg, args):
     if not await get_or_none(Role, user_id=msg.user_id, role="admin"):
         return
 
-    status, created = await db.get_or_create(BotStatus, id=0)
-    status.mail_data = msg.text
-    await db.update(status)
+    message, created = await db.get_or_create(MailMessage, id=0)
+    message.text = msg.text
+    await db.update(message)
 
     return await msg.answer("Готово!")
 
