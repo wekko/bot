@@ -29,10 +29,7 @@ class Plugin(object):
     __slots__ = ["deferred_events", "scheduled_funcs", "name", "usage", "first_command",
                  "init_funcs", "data", "temp_data", "process_pool"]
 
-    def __init__(self, name: str = "Example", usage: list = None, need_db: bool = False):
-        if need_db and not DATABASE_SETTINGS:
-            return
-
+    def __init__(self, name: str = "Example", usage: list = None):
         self.name = name
         self.first_command = ''
         self.process_pool = None

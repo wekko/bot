@@ -4,8 +4,7 @@ from plugin_system import Plugin
 
 plugin = Plugin('Блокнот',
                 usage=['запомни [строка] - запомнить строку',
-                       'напомни - напомнить строку'],
-                need_db=True)
+                       'напомни - напомнить строку'])
 
 
 class Memo(BaseModel):
