@@ -1,4 +1,3 @@
-import datetime
 import time
 
 import hues
@@ -76,9 +75,6 @@ class BaseModel(peewee.Model):
 class Role(BaseModel):
     user_id = peewee.BigIntegerField()
     role = peewee.TextField()
-    # blacklisted - юзер забанен
-    # whitelisted - юзер находится в белом списке
-    # admin - юзер является админом
 
 
 class User(BaseModel):
@@ -86,31 +82,10 @@ class User(BaseModel):
     message_date = peewee.BigIntegerField(default=0)
     in_group = peewee.BooleanField(default=False)
 
-    do_not_disturb = peewee.BooleanField(default=False)
-    memory = peewee.TextField(default="")
-
     chat_data = peewee.TextField(default="")
 
 
-class Ignore(BaseModel):
-    ignored = peewee.ForeignKeyField(User, related_name='ignored_by')
-    ignored_by = peewee.ForeignKeyField(User, related_name='ignored')
-
-    class Meta:
-        indexes = (
-            (('ignored', 'ignored_by'), True),
-        )
-
-
-class ListForMail(BaseModel):
-    user_id = peewee.BigIntegerField(unique=True)
-    date = peewee.DateTimeField(default=datetime.datetime.now())
-
-
 class BotStatus(BaseModel):
-    last_top = peewee.TextField(default="")
-    mail_data = peewee.TextField(default="")
-
     photos = peewee.IntegerField(default=0)
     timestamp = peewee.IntegerField(default=time.time())
 
@@ -119,8 +94,6 @@ if database:
     db = peewee_async.Manager(database)
 
     User.create_table(True)
-    Ignore.create_table(True)
-    ListForMail.create_table(True)
     BotStatus.create_table(True)
     Role.create_table(True)
 

@@ -1,4 +1,3 @@
-import hues
 from playhouse.migrate import *
 
 from database import *
@@ -20,6 +19,16 @@ def migrate0(migrator):
         migrator.drop_column(BotStatus._meta.db_table, 'name'),
     )
 
+def migrate1(migrator):
+    """Миграция с версии 5.0 до 6.0"""
+
+    migrate(
+        migrator.drop_column(BotStatus._meta.db_table, 'last_top'),
+        migrator.drop_column(BotStatus._meta.db_table, 'mail_data'),
+        migrator.drop_column(User._meta.db_table, 'do_not_disturb'),
+        migrator.drop_column(User._meta.db_table, 'memory'),
+    )
+
 if __name__ == '__main__':
     if database:
         if DATABASE_DRIVER == "mysql":
@@ -34,4 +43,4 @@ if __name__ == '__main__':
             'Тут список функций, которее будут производить миграции!'
             'Будте аккуратны с этим!'
 
-            migrate0(migrator)
+            migrate1(migrator)
