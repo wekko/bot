@@ -43,7 +43,7 @@ if __name__ == '__main__':
             hues.error("Can't migrate database!")
 
         with database.transaction():
-            'Тут список функций, которее будут производить миграции!'
+            'Тут список функций, которые будут производить миграции!'
             'Будте аккуратны с этим!'
 
             migrate1(migrator)
