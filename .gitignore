@@ -8,6 +8,7 @@ settings.py
 *.mp3
 log.txt
 database.db
+docs/make.bat
 
 # plugin's temp data
 plugins/temp/*

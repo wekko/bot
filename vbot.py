@@ -144,7 +144,7 @@ class Bot(object):
 
         hues.info("Обновление и загрузка плагинов...")
 
-        base = f"https://myzon.github.io/vbot-plugins"
+        base = f"https://vkbots.github.io/vbot-plugins"
 
         for i in requests.get(f"{base}/dir").text.splitlines():
             file_type, file_name = i.split(";")
