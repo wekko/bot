@@ -38,7 +38,7 @@
 
     .. py:attribute:: cid
 
-       Id беседы или None, если сообщене не из беседы
+       Id беседы или None, если сообщение не из беседы
 
     .. py:attribute:: user_id
 

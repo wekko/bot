@@ -8,7 +8,7 @@
     .. py:function:: method(method: str, \*\*values, send_from=None, nowait=False)
 
        (Сопрограмма)
-       Выполняет метод ``method`` API ВКонтакте (например, "messages.get") с параметрами ``values`` (например, {"count": 2}), в ``send_from`` можно передать SenderGroup или SenderUser, чтобы уточнить, кто должен выполнять команду, если ``nowait=True``, то method не вернёт результат запроса к вк, а продолжит пограмму без ожидания ответа.
+       Выполняет метод ``method`` API ВКонтакте (например, "messages.get") с параметрами ``values`` (например, {"count": 2}), в ``send_from`` можно передать SenderGroup или SenderUser, чтобы уточнить, кто должен выполнять команду, если ``nowait=True``, то method не вернёт результат запроса к вк, а продолжит программу без ожидания ответа.
 
     .. py:function:: upload_doc(multipart_data, filename="image.png")
 
