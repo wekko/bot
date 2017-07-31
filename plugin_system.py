@@ -303,7 +303,7 @@ class PluginSystem(object):
 
         result = False  # Флаг успешной обработки сообщения
 
-        if command.has_prefix and command.command:  # Если если смысл обработать команду
+        if command.has_prefix and command.command:  # Если есть смысл обработать команду
             for command_function in commands_:
                 result = True if result else await self.command_wrapper(command_function, *args, **kwargs) is not False
 

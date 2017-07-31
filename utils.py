@@ -124,7 +124,7 @@ def plural_form(n: int, v: (list, tuple)):
 
     Аргументы:
     :param n: число
-    :param v: варинты слова в формате (для 1, для 2, для 5)
+    :param v: варианты слова в формате (для 1, для 2, для 5)
 
     Пример:
     plural_form(difference.days, ("день", "дня", "дней"))
