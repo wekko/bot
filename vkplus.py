@@ -406,9 +406,9 @@ class Message(object):
         for mes in im['fwd_messages']:
             obj = MessageEventData.from_message_body(mes)
 
-            obj.msg_id = self.msg_id if self.msg_id else obj.msg_id
-            obj.peer_id = self.peer_id if self.peer_id else obj.peer_id
-            obj.conf = self.conf if self.conf else obj.conf
+            obj.msg_id = self.msg_id
+            obj.peer_id = self.peer_id
+            obj.conf = self.conf
 
             m = await create_message(self.vk, obj, self.user)
 
