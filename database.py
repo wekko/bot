@@ -6,13 +6,16 @@ import peewee_async
 
 try:
     from settings import DATABASE_SETTINGS, DATABASE_DRIVER, DATABASE_CHARSET
+    s = True
+
 except:
     DATABASE_SETTINGS, DATABASE_DRIVER, DATABASE_CHARSET = (), None, "utf8mb4"
+    s = False
 
-additional_values = {}
+_additional_values = {}
 if DATABASE_DRIVER == "mysql":
     driver = peewee_async.MySQLDatabase
-    additional_values['charset'] = DATABASE_CHARSET
+    _additional_values['charset'] = DATABASE_CHARSET
 elif DATABASE_DRIVER == "postgresql":
     driver = peewee_async.PostgresqlDatabase
 else:
@@ -21,16 +24,17 @@ else:
 if len(DATABASE_SETTINGS) == 0:
     database = False
 elif len(DATABASE_SETTINGS) == 1:
-    name, = DATABASE_SETTINGS
-    database = driver(name)
+    _name, = DATABASE_SETTINGS
+    database = driver(_name)
 else:
-    name, host, port, user, password = DATABASE_SETTINGS
-    database = driver(name,
-                      host=host,
-                      port=port,
-                      user=user,
-                      password=password,
-                      **additional_values)
+    _name, _host, _port, _user, _password = DATABASE_SETTINGS
+    _port = int(_port)
+    database = driver(_name,
+                      host=_host,
+                      port=_port,
+                      user=_user,
+                      password=_password,
+                      **_additional_values)
 
 
 async def get_or_none(model, *args, **kwargs):
@@ -78,16 +82,27 @@ class Role(BaseModel):
 
 
 class User(BaseModel):
-    uid = peewee.BigIntegerField(primary_key=True, unique=True)
+    user_id = peewee.BigIntegerField(primary_key=True, unique=True)
     message_date = peewee.BigIntegerField(default=0)
     in_group = peewee.BooleanField(default=False)
 
+    status = peewee.TextField(default="")
+    status_locked_message = peewee.TextField(default="")
+
+    chatter_id = peewee.TextField(null=True)
     chat_data = peewee.TextField(default="")
+
+
+class Status(BaseModel):
+    user_id = peewee.BigIntegerField()
+    plugin_id = peewee.TextField()
+
+    value = peewee.BigIntegerField()
 
 
 class BotStatus(BaseModel):
     photos = peewee.IntegerField(default=0)
-    timestamp = peewee.IntegerField(default=time.time())
+    timestamp = peewee.IntegerField(default=time.time)
 
 
 if database:
@@ -96,6 +111,7 @@ if database:
     User.create_table(True)
     BotStatus.create_table(True)
     Role.create_table(True)
+    Status.create_table(True)
 
-else:
+elif s:
     hues.error("Не удалось создать базу данных! Проверьте настройки и попробуйте снова!")

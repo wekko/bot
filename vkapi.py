@@ -6,6 +6,7 @@ from urllib.parse import urlparse, parse_qsl
 import aiohttp
 import hues
 
+import settings
 import vkplus
 from utils import fatal, schedule_coroutine
 
@@ -51,16 +52,25 @@ class VkClient:
 
     async def update_requests(self):
         while True:
-            await asyncio.sleep(1)
-            self.requests = 0
+            if self.requests > 0:
+                await asyncio.sleep(settings.REQUEST_INTERVAL)
+                self.requests = 0
+
+            await asyncio.sleep(0)
 
     async def process_queue(self):
         while True:
-            if self.queue.empty() or self.requests > 2:
-                await asyncio.sleep(0.1)
-                continue
+            try:
+                if self.queue.empty() or self.requests >= settings.REQUESTS_QUANTITY:
+                    await asyncio.sleep(0.1)
+                    continue
 
-            await self.execute_queue()
+                await self.execute_queue()
+
+            except Exception as e:
+                import traceback
+                hues.error("Ошибка во время обработки запросов к ВК")
+                traceback.print_exc()
 
     async def execute_queue(self):
         execute = "return ["
@@ -93,16 +103,15 @@ class VkClient:
             result = await asyncio.shield(self.execute(execute))
 
         for task in tasks:
-            if result:
-                task_result = result.pop(0)
-
-                try:
+            try:
+                if result:
+                    task_result = result.pop(0)
                     task.set_result(task_result)
-                except asyncio.InvalidStateError:
-                    pass
+                else:
+                    task.set_result(None)
 
-            else:
-                task.set_result(None)
+            except (asyncio.InvalidStateError, IndexError, KeyError):
+                pass
 
     async def execute(self, code, **additional_values):
         if self.retry > 10:
@@ -110,7 +119,7 @@ class VkClient:
 
             return False
 
-        new = code.replace("\n", "<br>").replace("\r", "")
+        new = code.replace("\n", "<br>")
 
         url = f"https://api.vk.com/method/execute?access_token={self.token}&v=5.64"
 
@@ -128,21 +137,24 @@ class VkClient:
                             return False
 
                         new_data = {"captcha_key": captcha_key, "captcha_sid": error_data["captcha_sid"]}
+                        new_data.update(additional_values)
 
-                        return await self.execute(code, **additional_values, **new_data)
+                        return await self.execute(code, **new_data)
 
                     error_codes.append(error_data['error_code'])
                     errors.append(error_data)
 
                 if 'response' in data:
-                    if errors:
-                        hues.error("Ошбка во время запроса(запрос вернул что-то)")
-                        for k in errors:
-                            hues.error(k.get("error_code", ""))
-                            hues.error(k.get("error_msg", ""))
-                            hues.error(k.get("request_params", ""))
+                    for error in errors:
+                        hues.warn(str(error))
 
                     self.retry = 0
+
+                    if isinstance(data['response'], list) and data['response'] and data['response'][0] is False:
+                        error_codes.append("...")
+                        errors.append(data.get("execute_errors", "unknown"))
+
+                        hues.error(data.get("execute_errors", "unknown"))
 
                     if data['response'] is None:
                         error_codes.append(INTERNAL_ERROR)
@@ -151,8 +163,11 @@ class VkClient:
                     return data['response']
 
             if INTERNAL_ERROR in error_codes:
-                hues.warn("Ошибка у ВК.")
-                await self.user(self.username, self.password, self.app_id, self.scope)
+                hues.warn("Ошибка у ВК")
+
+                if self.app_id != -1:
+                    await self.user(self.username, self.password, self.app_id, self.scope)
+
                 self.retry += 1
 
                 await asyncio.sleep(1)
@@ -161,17 +176,15 @@ class VkClient:
 
             if AUTHORIZATION_FAILED in error_codes:
                 hues.warn("Пользователь не отвечает. Попробую переполучить токен.")
-                await self.user(self.username, self.password, self.app_id, self.scope)
+
+                if self.app_id != -1:
+                    await self.user(self.username, self.password, self.app_id, self.scope)
+
                 self.retry += 1
 
                 return await self.execute(code)
 
-        if errors:
-            hues.error("Ошибка при запросе!")
-            for k in errors:
-                hues.error(k.get("error_code", ""))
-                hues.error(k.get("error_msg", ""))
-                hues.error(k.get("request_params", ""))
+            hues.error(errors)
 
         return False
 
@@ -181,11 +194,27 @@ class VkClient:
         self.app_id = app_id
         self.scope = scope
 
-        self.token = await get_token(username, password, app_id, scope)
-        hues.warn(f"User's token: {self.token}")
+        retries = 5
+        for i in range(retries):
+            self.token = await get_token(username, password, app_id, scope)
+
+            if self.token:
+                break
+
+        if not self.token:
+            return hues.error("Can't get token!")
+
+        self_data = await self.execute("return API.account.getProfileInfo();")
+
+        hues.info(f"Вошёл как: {self_data['first_name']} {self_data['last_name']} "
+                  f"(https://vk.com/{self_data['screen_name']})")
 
     async def group(self, token):
         self.token = token
+
+        self_data = (await self.execute("return API.groups.getById();"))[0]
+
+        hues.info(f"Вошёл как: {self_data['name']} (https://vk.com/{self_data['screen_name']})")
 
 
 ############################################################################
@@ -218,6 +247,7 @@ def get_url_query(url):
 
     parsed_url = urlparse(url)
     url_query = parse_qsl(parsed_url.fragment or parsed_url.query)
+
     # login_response_url_query can have multiple key
     url_query = dict(url_query)
 
@@ -271,46 +301,25 @@ async def auth_captcha_is_needed(response, login_form_data, captcha_url, session
 async def get_token(username, password, app_id, scope):
     url_get_token = "https://oauth.vk.com/authorize"
 
-    session = aiohttp.ClientSession()
+    with aiohttp.ClientSession() as session:
+        await login(username, password, session)
 
-    await login(username, password, session)
+        token_data = {
+            "client_id": app_id,
+            "redirect_uri": "https://oauth.vk.com/blank.html?",
+            "response_type": "token",
+            "scope": scope,
+            "display": "mobile",
+            "v": 5.64
+        }
 
-    token_data = {
-        "client_id": app_id,
-        "redirect_uri": "https://oauth.vk.com/blank.html?",
-        "response_type": "token",
-        "scope": scope,
-        "display": "mobile",
-        "v": 5.64
-    }
+        headers = {
+            "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
+            "accept-language": "ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4",
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+        }
 
-    headers = {
-        "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
-        "accept-language": "ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4",
-        "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
-    }
-
-    async with session.post(url_get_token, data=token_data, headers=headers) as resp:
-        html = await resp.text()
-
-        response_url_query1 = get_url_query(resp.url)
-
-        if resp.history:
-            response_url_query2 = get_url_query(resp.history[-1].headers["Location"])
-        else:
-            response_url_query2 = {}
-
-        if 'access_token' in response_url_query1:
-            return response_url_query1['access_token']
-
-        elif 'access_token' in response_url_query2:
-            return response_url_query2['access_token']
-
-        else:
-            form_action = get_form_action(html)
-
-    if form_action:
-        async with session.post(form_action, headers=headers) as resp:
+        async with session.post(url_get_token, data=token_data, headers=headers) as resp:
             html = await resp.text()
 
             response_url_query1 = get_url_query(resp.url)
@@ -326,7 +335,27 @@ async def get_token(username, password, app_id, scope):
             elif 'access_token' in response_url_query2:
                 return response_url_query2['access_token']
 
-    fatal("Can't get token!")
+            else:
+                form_action = get_form_action(html)
+
+        if form_action:
+            async with session.post(form_action, headers=headers) as resp:
+                html = await resp.text()
+
+                response_url_query1 = get_url_query(resp.url)
+
+                if resp.history:
+                    response_url_query2 = get_url_query(resp.history[-1].headers["Location"])
+                else:
+                    response_url_query2 = {}
+
+                if 'access_token' in response_url_query1:
+                    return response_url_query1['access_token']
+
+                elif 'access_token' in response_url_query2:
+                    return response_url_query2['access_token']
+
+        return None
 
 
 async def login(username, password, session):
@@ -363,7 +392,7 @@ async def login(username, password, session):
             await auth_check_is_needed(await resp.text(), session)
 
         elif 'security_check' in response_url_query:
-            fatal("Phone number is needed")
+            hues.error("Phone number is needed")
 
         else:
-            fatal("Authorization error (incorrect password)")
+            hues.error("Authorization error (incorrect password)")

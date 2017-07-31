@@ -2,12 +2,11 @@
 import logging
 from os import getenv
 
-import hues
-from aiohttp import web
+from aiohttp import web, asyncio
 
 from database import *
-from utils import MessageEventData
 from vbot import Bot
+from vkplus import MessageEventData
 
 
 class CallbackBot(Bot):
@@ -27,20 +26,19 @@ class CallbackBot(Bot):
             return web.Response(text=self.CONF_CODE)
         obj = data['object']
 
-        if type == 'message_new':
-            uid = int(obj['user_id'])
+        if type in ('message_new', 'message_reply'):
+            user_id = int(obj['user_id'])
 
-            data = MessageEventData(False, 0, uid, obj['body'], obj['date'],
-                                    obj["id"], ["yes"] if ("attachments" in obj) else [])
+            data = MessageEventData.from_message_body(obj)
 
-            user, create = await db.get_or_create(User, uid=uid)
+            user, create = await db.get_or_create(User, user_id=user_id)
 
             await self.check_if_command(data, user)
         if type == 'group_join':
             # Человек присоединился к группе
-            uid = int(obj['user_id'])
+            user_id = int(obj['user_id'])
 
-            user, create = await db.get_or_create(uid=uid)
+            user, create = await db.get_or_create(user_id=user_id)
 
             user.in_group = True
 
@@ -48,9 +46,9 @@ class CallbackBot(Bot):
 
         if type == 'group_leave':
             # Человек вышел из группы
-            uid = int(obj['user_id'])
+            user_id = int(obj['user_id'])
 
-            user, create = await db.get_or_create(uid=uid)
+            user, create = await db.get_or_create(user_id=user_id)
 
             user.in_group = False
 

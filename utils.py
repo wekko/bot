@@ -1,45 +1,61 @@
 # Various helpers
 import asyncio
+import datetime
 import html
-from enum import Enum
-from typing import List
+import os
+from configparser import ConfigParser
+from typing import Iterator, Coroutine, Iterable
 
 import hues
+from dateutil.relativedelta import relativedelta
+
+from plugin_system import Plugin
 
 
-class SendFrom(Enum):
-    USER = 0
-    GROUP = 1
+class SenderGroup:
+    USER = False
+    GROUP = True
+
+    __slots__ = ('target',)
+
+    def __init__(self, target):
+        self.target = target
 
 
-def schedule_coroutine(target):
-    """Schedules target coroutine in the given event loop
-    If not given, *loop* defaults to the current thread's event loop
-    Returns the scheduled task.
-    """
-    if asyncio.iscoroutine(target):
-        return asyncio.ensure_future(target, loop=asyncio.get_event_loop())
-    else:
-        raise TypeError("target must be a coroutine, "
-                        "not {!r}".format(type(target)))
+class SenderUser:
+    USER = True
+    GROUP = False
 
+    __slots__ = ('target', )
 
-# http://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks
-def chunks(l, n):
-    """Yield successive n-sized chunks from l."""
-    for i in range(0, len(l), n):
-        yield l[i:i + n]
+    def __init__(self, target):
+        self.target = target
 
 
 class Attachment(object):
-    __slots__ = ('type', 'owner_id', 'id', 'access_key', 'link')
+    __slots__ = ('type', 'owner_id', 'id', 'access_key', 'url')
 
-    def __init__(self, attach_type: str, owner_id: int, aid: int, access_key: str, link: str):
+    def __init__(self, attach_type: str, owner_id: int, aid: int, access_key: str, url: str):
         self.type = attach_type
         self.owner_id = owner_id
         self.id = aid
         self.access_key = access_key
-        self.link = link
+        self.url = url
+
+    @staticmethod
+    def from_raw(raw_attach):
+        a_type = raw_attach['type']  # Тип аттача
+        attach = raw_attach[a_type]  # Получаем сам аттач
+
+        # Ищём ссылку на фото
+        url = ""
+        for k, v in attach.items():
+            if "photo_" in k:
+                url = v
+
+        key = attach.get('access_key')  # Получаем access_key для аттача
+
+        return Attachment(a_type, attach['owner_id'], attach['id'], key, url)
 
     def as_str(self):
         """Возвращает приложение в формате ownerid_id_accesskey"""
@@ -63,20 +79,35 @@ class RequestFuture(asyncio.Future):
         super().__init__()
 
 
-class MessageEventData(object):
-    __slots__ = ('conf', 'peer_id', 'user_id', 'body', 'time', "msg_id", "attaches")
+def schedule_coroutine(target: Coroutine):
+    """Schedules target coroutine in the given event loop
+    If not given, *loop* defaults to the current thread's event loop
+    Returns the scheduled task.
+    """
+    if asyncio.iscoroutine(target):
+        return asyncio.ensure_future(target, loop=asyncio.get_event_loop())
+    else:
+        raise TypeError("target must be a coroutine, "
+                        "not {!r}".format(type(target)))
 
-    def __init__(self, conf: bool, pid: int, uid: int, body: str, time: int, msg_id: int, attaches: List):
-        self.conf = conf
-        self.peer_id = pid
-        self.user_id = uid
-        self.body = body
-        self.time = time
-        self.msg_id = msg_id
-        self.attaches = attaches
 
-    def __repr__(self):
-        return self.body
+# http://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks
+def chunks(l: Iterable, n: int):
+    """Yield successive n-sized chunks from l."""
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
+
+
+tree_types = (list, tuple)
+
+
+def traverse(o) -> Iterator:
+    if isinstance(o, tree_types):
+        for value in o:
+            for subvalue in traverse(value):
+                yield subvalue
+    else:
+        yield o
 
 
 def fatal(*args):
@@ -85,24 +116,70 @@ def fatal(*args):
     exit()
 
 
-# Characters are taken from http://gsgen.ru/tools/perevod-raskladki-online/
-ENGLISH = "Q-W-E-R-T-Y-U-I-O-P-A-S-D-F-G-H-J-K-L-Z-X-C-V-B-N-M"
-ENG_EXPR = ENGLISH + ENGLISH.lower() + "-" + ":-^-~-`-{-[-}-]-\"-'-<-,->-.-;-?-/-&-@-#-$"
-RUS_EXPR = "Й-Ц-У-К-Е-Н-Г-Ш-Щ-З-Ф-Ы-В-А-П-Р-О-Л-Д-Я-Ч-С-М-И-Т-Ь"
-rus_expr = RUS_EXPR + RUS_EXPR.lower() + "-" + "Ж-:-Ё-ё-Х-х-Ъ-ъ-Э-э-Б-б-Ю-ю-ж-,-.-?-\"-№-;"
-
-ENG_TO_RUS = str.maketrans(ENG_EXPR, rus_expr)
-RUS_TO_ENG = str.maketrans(rus_expr, ENG_EXPR)
+cases = (2, 0, 1, 1, 1, 2)
 
 
-def convert_to_rus(text: str) -> str:
-    """Конвертировать текст, написанный на русском с английской раскладкой в русский"""
-    return text.translate(ENG_TO_RUS)
+def plural_form(n: int, v: (list, tuple)):
+    """Функция возвращает число и просклонённое слово после него
+
+    Аргументы:
+    :param n: число
+    :param v: варинты слова в формате (для 1, для 2, для 5)
+
+    Пример:
+    plural_form(difference.days, ("день", "дня", "дней"))
+
+    :return: Число и просклонённое слово после него
+    """
+
+    return f"{n}  {v[2 if (4 < n % 100 < 20) else cases[min(n % 10, 5)]]}"
 
 
-def convert_to_en(text: str) -> str:
-    """Конвертировать текст, написанный на русском с русской раскладкой в английскую раскладку"""
-    return text.translate(RUS_TO_ENG)
+def load_settings(plugin: Plugin):
+    """Функция возвращает словарь с настройками из файла настроек "settings.ini" плагина plugin.
+
+    Аргументы:
+    :param plugin: плагин, чьи настройки надо получить
+
+    :return: словарь с настройками
+    """
+
+    values = {}
+
+    file = f"{plugin.folder}/settings.ini"
+
+    if not os.path.exists(file):
+        return values
+
+    config = ConfigParser()
+    config.read(file)
+
+    for n, v in config.items("DEFAULT"):
+        if v in ("True", "False"):
+            values[n] = (v == "True")
+        else:
+            values[n] = v
+
+    return values
+
+
+def age(date: datetime.datetime):
+    """Возвращает возраст в годах по дате рождения
+
+    Функция
+    :param date: дата рождения
+    :return: возраст
+    """
+
+    # Get the current date
+    now = datetime.datetime.utcnow()
+    now = now.date()
+
+    # Get the difference between the current date and the birthday
+    age = relativedelta(now, date)
+    age = age.years
+
+    return age
 
 
 keys = [
@@ -121,6 +198,7 @@ keys = [
 
 def parse_msg_flags(bitmask: int) -> dict:
     """Функция для чтения битовой маски и возврата словаря значений"""
+
     start = 1
     values = []
     for x in range(1, 11):
@@ -130,7 +208,13 @@ def parse_msg_flags(bitmask: int) -> dict:
     return dict(zip(keys, values))
 
 
-def unquote(data):
+def unquote(data: (str, dict, list)):
+    """Функция, раскодирующая ответ от ВК
+
+    :param data: строка для раскодировки
+    :return: раскодированный ответ
+    """
+
     temp = data
 
     if issubclass(temp.__class__, str):

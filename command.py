@@ -22,36 +22,42 @@ class Command(object):
         self._get_prefix()
         self.command = ""
         self.args = []
-        # Если команда пустая
-        if not self.text.strip():
-            self.has_prefix = False
+
+        if self.has_prefix:
+            msg.prefix = True
+
+        else:
+            msg.prefix = False
 
     def check_command(self, command_system):
-        if not self.has_prefix:
-            return False
+        text = self.text.lower()
 
-        for command in command_system.commands:
-            if self.text.startswith(command + " ") or self.text == command:
-                self.command = command
-                self.args = self.text.replace(command, "", 1).split()
-                self.msg.text = " ".join(self.args)
-                return True
+        if self.has_prefix:
+            for command in command_system.commands:
+                if text.startswith(command + " ") or text == command or text.startswith(command + "\n"):
+                    self.command = command
+                    self.msg.command = command
+                    self.msg.text = self.text[len(command):]
+                    self.args = self.msg.text.split()
+                    return True
 
-        if command_system.ANY_COMMANDS:
+        if command_system.on_messages:
             self.args = self.text.split()
-            self.msg.text = " ".join(self.args)
+            self.msg.text = self.text
             return True
 
         return False
 
     def log(self):
-        """Пишет в лог, что была распознана команда"""
+        """Отправка сообщения в лог о том, что была распознана команда"""
+
         pid = self.msg.peer_id
         who = ("конференции {}" if self.msg.conf else "ЛС {}").format(pid)
         hues.info(f"Команда '{self.command}' из {who} с аргументами {self.args}")
 
     def _get_prefix(self):
-        """Пытается получить префикс из текста команды"""
+        """Попытка получить префикс из текста команды"""
+
         for prefix in settings.PREFIXES:
             # Если команда начинается с префикса
             if self.text.startswith(prefix):
@@ -68,30 +74,34 @@ class CommandSystem(object):
     def __init__(self, commands, plugin_system: PluginSystem):
         # Система плагинов
         self.system = plugin_system
+
         # self.commands - список с командами
         self.commands = commands
-        self.ANY_COMMANDS = bool(plugin_system.any_commands)
+        self.on_messages = bool(plugin_system.on_messages)
 
     async def process_command(self, msg_obj: Message, cmd: Command):
-        """Обрабатывает команду"""
+        """Обрабатка команды"""
+
         if not cmd.check_command(self):
             return False
 
-        cmd_text = cmd.command
-        # Логгируем команду, если нужно (но не логгируем плагины,
-        # которые реагируют на любые команды)
-        if settings.LOG_COMMANDS and not self.ANY_COMMANDS:
+        if cmd.has_prefix and settings.LOG_COMMANDS:
             cmd.log()
+
         try:
-            await self.system.call_command(cmd_text, msg_obj, cmd.args)
+            return await self.system.call_command(cmd, msg_obj, cmd.args)
+
+        except Exception as e:  # Если в плагине произошла какая-то ошибка
+            code = msg_obj.vk.anti_flood()
+
+            await msg_obj.answer(f"{code}.\n"
+                                 f"Произошла ошибка при выполнении команды <{cmd.command}> "
+                                 "пожалуйста, сообщите об этом разработчику!")
+
+            hues.error(
+                f"{code}.\n"
+                f"Произошла ошибка при вызове команды '{cmd.command}' с аргументами {cmd.args}.\n"
+                f"Текст сообщения: '{cmd.text}'.\n"
+                f"Ошибка:\n{traceback.format_exc()}")
 
             return True
-        # Если в плагине произошла какая-то ошибка
-        except Exception:
-            await msg_obj.answer(f"{msg_obj.vk.anti_flood()}. "
-                                 f"Произошла ошибка при выполнении команды <{cmd_text}> "
-                                 "пожалуйста, сообщите об этом разработчику!")
-            hues.error(
-                f"Произошла ошибка при вызове команды '{cmd_text}' с аргументами {cmd.args}. "
-                f"Текст сообщения: '{msg_obj._data}'."
-                f"Ошибка:\n{traceback.format_exc()}")

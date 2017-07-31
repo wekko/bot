@@ -2,6 +2,7 @@
 config
 *.nja
 __pycache__
+plugins/*
 settings.py
 .idea/
 *.mp3

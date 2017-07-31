@@ -1,0 +1,282 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ru">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Описание структуры плагина &#8212; Документация Vbot 6.0</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="index" title="Алфавитный указатель" href="genindex.html" />
+    <link rel="search" title="Поиск" href="search.html" />
+    <link rel="next" title="Описание объекта сообщения" href="message.html" />
+    <link rel="prev" title="Документация Vbot’а" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="id1">
+<h1>Описание структуры плагина<a class="headerlink" href="#id1" title="Ссылка на этот заголовок">¶</a></h1>
+<div class="section" id="id2">
+<h2>Как создать свой плагин:<a class="headerlink" href="#id2" title="Ссылка на этот заголовок">¶</a></h2>
+<ol class="arabic simple">
+<li>Ипортировать файл, который отвечает за работу плагинов:</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">plugin_system</span> <span class="k">import</span> <span class="n">Plugin</span>
+</pre></div>
+</div>
+<ol class="arabic" start="2">
+<li><p class="first">Инициировать сам плагин с именем «plugin».</p>
+<p>В описании очень удобно писать 1 элемент - одна команда с описанием без ведущего префикса. Каждая строчка при выводе пользователю с помощью «!команды» начинается с префикса.</p>
+</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">plugin</span> <span class="o">=</span> <span class="n">Plugin</span><span class="p">(</span><span class="s2">&quot;имя плагина&quot;</span><span class="p">,</span>
+                <span class="n">usage</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;описание&quot;</span><span class="p">,</span> <span class="s2">&quot;описание&quot;</span><span class="p">,</span> <span class="s2">&quot;и т.д.&quot;</span><span class="p">],</span>
+                <span class="n">plugin_id</span><span class="o">=</span><span class="s2">&quot;unique_id_i_invented&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>Как использовать базу данных<a class="headerlink" href="#id3" title="Ссылка на этот заголовок">¶</a></h2>
+<p>Если вы намерены использовать базу данных, во-первых, вас стоит почитать что это такое и что такое SQL. В боте работа с базами реализована через peewee и peewee_async.</p>
+<ol class="arabic simple">
+<li>Подключить к плагину базу данных:</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">database</span> <span class="k">import</span> \<span class="o">*</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li>Создать нужные вам модели (см. peewee), которые должны наследовать BaseModel:</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Memo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">user_id</span> <span class="o">=</span> <span class="n">peewee</span><span class="o">.</span><span class="n">BigIntegerField</span><span class="p">(</span><span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">peewee</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li>Создать таблицы для всех ваших моделей:</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Memo</span><span class="o">.</span><span class="n">create_table</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li>Работать с бд, как написано в документации peewee_async. Например:</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mem</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">text</span> <span class="o">+</span> <span class="n">divider</span> <span class="o">+</span> <span class="n">attachment</span>
+<span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mem</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mem</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">text</span>
+<span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mem</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id4">
+<h2>Плагины с состояниями<a class="headerlink" href="#id4" title="Ссылка на этот заголовок">¶</a></h2>
+<p>Если вашему плагину нужно, чтобы сообщение пользователя было обработано только им - можно использовать методы <code class="docutils literal"><span class="pre">plugin.lock</span></code>, <code class="docutils literal"><span class="pre">plugin.unlock</span></code> и <code class="docutils literal"><span class="pre">plugin.is_locked</span></code>.</p>
+<p>4.1. Сопрограмма plugin.lock(user, message), где user - это модель из БД, а message - сообщение, которое должно будет выводиться, когда другой плагин попробует занять пользователя. Вернёт (True, «»), если пользователь успешно занят плагином и (False, сообщение плагина, занявшего пользователя), если не удалось (например, потому что пользователь уже занят другим плагином). Если не удалось занять пользователя - необходимо по желанию вывести сообщение пользователю и прекратить программу.
+4.2. Сопрограмма plugin.unlock(user), где user - это модель из БД, освобождает пользователя для других плагинов.
+4.2. Сопрограмма plugin.is_mine(user), где user - это модель из БД, True, если пользователь занят текущим плагином.
+4.3. Сопрограмма plugin.clear(user), где user - это модель из БД, выполняет unlock(user) и set_user_status(user, 0).</p>
+<dl class="class">
+<dt id="Plugin">
+<em class="property">class </em><code class="descname">Plugin</code><a class="headerlink" href="#Plugin" title="Ссылка на это определение">¶</a></dt>
+<dd><dl class="function">
+<dt id="Plugin.on_init">
+<code class="descclassname">&#64;</code><code class="descname">on_init</code><a class="headerlink" href="#Plugin.on_init" title="Ссылка на это определение">¶</a></dt>
+<dd><p>(Декоратор для сопрограммы)
+Сопрограмма должна принимать аргумент VkPlus. Эта сопрограмма будет выполняться при активации плаигнов в самом начале.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Plugin.on_command">
+<code class="descclassname">&#64;</code><code class="descname">on_command</code><span class="sig-paren">(</span><em>*commands</em>, <em>status=None</em><span class="sig-paren">)</span><a class="headerlink" href="#Plugin.on_command" title="Ссылка на это определение">¶</a></dt>
+<dd><p>(Декоратор для сопрограммы)
+Сопрограмма должна принимать аргументы Message и VkPlus. Эта сопрограмма будет выполняться каждый раз, когда пользователь будет присылать сообщение с префиксом, которое начинается с одной из строк, указанных в аргументах on_command.</p>
+<p>Пример (command будет выполняться, если написать боту (у которого префикс «!») «!тест» или «!test «, но не «!тесты»):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Если</span> <span class="n">аргумент</span> <span class="s2">&quot;status&quot;</span> <span class="n">присутствует</span> <span class="o">-</span> <span class="n">сопрограмма</span> <span class="n">будет</span> <span class="n">выполняться</span> <span class="n">только</span> <span class="n">тогда</span><span class="p">,</span> <span class="n">когда</span> <span class="n">у</span> <span class="n">пользователя</span> <span class="n">в</span> <span class="n">плагине</span> <span class="n">есть</span> <span class="n">определённый</span> <span class="n">статус</span><span class="o">.</span>
+<span class="n">Для</span> <span class="n">каждого</span> <span class="n">плагина</span> <span class="n">этот</span> <span class="n">статус</span> <span class="n">свой</span> <span class="n">за</span> <span class="n">исключением</span> <span class="n">случаев</span><span class="p">,</span> <span class="n">когда</span> <span class="n">у</span> <span class="n">плагинов</span> <span class="n">одинаковое</span> <span class="n">название</span> <span class="n">или</span> <span class="n">одинаковые</span><span class="p">,</span> <span class="n">так</span><span class="o">-</span><span class="n">же</span> <span class="n">статус</span> <span class="n">будет</span> <span class="n">общим</span> <span class="n">у</span> <span class="n">плагинов</span> <span class="n">с</span> <span class="n">совпадающим</span> <span class="n">plugin_id</span><span class="p">,</span> <span class="n">который</span> <span class="n">можно</span> <span class="n">передать</span> <span class="n">в</span> <span class="n">конструкторе</span> <span class="n">плагина</span><span class="p">,</span> <span class="n">и</span> <span class="n">если</span> <span class="n">название</span> <span class="n">будет</span> <span class="n">совпадать</span> <span class="n">с</span> <span class="n">plugin_id</span><span class="o">.</span> <span class="n">Поэтому</span> <span class="n">названия</span> <span class="n">следует</span> <span class="n">выбирать</span> <span class="n">уникальные</span><span class="o">.</span>
+<span class="n">Менять</span> <span class="n">статусы</span> <span class="n">пользователей</span> <span class="n">можно</span> <span class="n">сопрограммами</span> <span class="n">plugin</span><span class="o">.</span><span class="n">set_user_status</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">status</span><span class="p">)</span> <span class="n">и</span> <span class="n">plugin</span><span class="o">.</span><span class="n">get_user_status</span><span class="p">(</span><span class="n">user</span><span class="p">),</span> <span class="n">где</span> <span class="n">user</span> <span class="o">-</span> <span class="n">экзепляр</span> <span class="n">User</span> <span class="n">из</span> <span class="n">базы</span> <span class="n">данных</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@plugin</span><span class="o">.</span><span class="n">on_command</span><span class="p">(</span><span class="s1">&#39;тест&#39;</span><span class="p">,</span> <span class="s1">&#39;test&#39;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">command</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="Plugin.on_message">
+<code class="descclassname">&#64;</code><code class="descname">on_message</code><span class="sig-paren">(</span><em>status=None</em><span class="sig-paren">)</span><a class="headerlink" href="#Plugin.on_message" title="Ссылка на это определение">¶</a></dt>
+<dd><p>(Декоратор для сопрограммы)
+Сопрограмма должна принимать аргументы Message и VkPlus. Эта сопрограмма будет выполняться в ответ на любое необработанное сообщение пользователя.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Если</span> <span class="n">аргумент</span> <span class="s2">&quot;status&quot;</span> <span class="n">присутствует</span> <span class="o">-</span> <span class="n">сопрограмма</span> <span class="n">будет</span> <span class="n">выполняться</span> <span class="n">только</span> <span class="n">тогда</span><span class="p">,</span> <span class="n">когда</span> <span class="n">у</span> <span class="n">пользователя</span> <span class="n">в</span> <span class="n">плагине</span> <span class="n">есть</span> <span class="n">определённый</span> <span class="n">статус</span><span class="o">.</span>
+<span class="n">Для</span> <span class="n">каждого</span> <span class="n">плагина</span> <span class="n">этот</span> <span class="n">статус</span> <span class="n">свой</span> <span class="n">за</span> <span class="n">исключением</span> <span class="n">случаев</span><span class="p">,</span> <span class="n">когда</span> <span class="n">у</span> <span class="n">плагинов</span> <span class="n">одинаковое</span> <span class="n">название</span> <span class="n">или</span> <span class="n">одинаковые</span><span class="p">,</span> <span class="n">так</span><span class="o">-</span><span class="n">же</span> <span class="n">статус</span> <span class="n">будет</span> <span class="n">общим</span> <span class="n">у</span> <span class="n">плагинов</span> <span class="n">с</span> <span class="n">совпадающим</span> <span class="n">plugin_id</span><span class="p">,</span> <span class="n">который</span> <span class="n">можно</span> <span class="n">передать</span> <span class="n">в</span> <span class="n">конструкторе</span> <span class="n">плагина</span><span class="p">,</span> <span class="n">и</span> <span class="n">если</span> <span class="n">название</span> <span class="n">будет</span> <span class="n">совпадать</span> <span class="n">с</span> <span class="n">plugin_id</span><span class="o">.</span> <span class="n">Поэтому</span> <span class="n">названия</span> <span class="n">следует</span> <span class="n">выбирать</span> <span class="n">уникальные</span><span class="o">.</span>
+<span class="n">Менять</span> <span class="n">статусы</span> <span class="n">пользователей</span> <span class="n">можно</span> <span class="n">сопрограммами</span> <span class="n">plugin</span><span class="o">.</span><span class="n">set_user_status</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">status</span><span class="p">)</span> <span class="n">и</span> <span class="n">plugin</span><span class="o">.</span><span class="n">get_user_status</span><span class="p">(</span><span class="n">user</span><span class="p">),</span> <span class="n">где</span> <span class="n">user</span> <span class="o">-</span> <span class="n">экзепляр</span> <span class="n">User</span> <span class="n">из</span> <span class="n">базы</span> <span class="n">данных</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@plugin</span><span class="o">.</span><span class="n">on_message</span><span class="p">()</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">command</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="Plugin.before_command">
+<code class="descclassname">&#64;</code><code class="descname">before_command</code><span class="sig-paren">(</span><em>priority=0</em><span class="sig-paren">)</span><a class="headerlink" href="#Plugin.before_command" title="Ссылка на это определение">¶</a></dt>
+<dd><p>(Декоратор для сопрограммы)
+Сопрограмма должна принимать аргументы Message и VkPlus. Сопрограмма будет выполняться до вызова обработчика любой команды.</p>
+<p>Порядок вызова всех сопрограмм с декоратором определяется порядком инициализации плагина / сопрограммы и параметра priority. Больше значние приоритета - первее будет выполнена сопрограмма</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@plugin</span><span class="o">.</span><span class="n">before_command</span><span class="p">()</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">before_command_processed</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="Plugin.after_command">
+<code class="descclassname">&#64;</code><code class="descname">after_command</code><span class="sig-paren">(</span><em>priority=0</em><span class="sig-paren">)</span><a class="headerlink" href="#Plugin.after_command" title="Ссылка на это определение">¶</a></dt>
+<dd><p>(Декоратор для сопрограммы)
+Сопрограмма должна принимать аргументы: результат обработки функции, Message и VkPlus. Сопрограмма будет выполняться после обработки любой команды.</p>
+<p>Порядок вызова всех сопрограмм с декоратором определяется порядком инициализации плагина / сопрограммы и параметра priority. Больше значние приоритета - первее будет выполнена сопрограмма</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@plugin</span><span class="o">.</span><span class="n">after_command</span><span class="p">()</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">after_command_processed</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="Plugin.lock">
+<code class="descname">lock</code><span class="sig-paren">(</span><em>user: User</em>, <em>message: str</em><span class="sig-paren">)</span><a class="headerlink" href="#Plugin.lock" title="Ссылка на это определение">¶</a></dt>
+<dd><p>(Сопрограмма)
+user - это модель из БД, а message - сообщение, которое должно будет выводиться, когда другой плагин попробует занять пользователя.</p>
+<p>Вернёт (True, «»), если пользователь успешно занят плагином и (False, сообщение плагина, занявшего пользователя), если не удалось (например, потому что пользователь уже занят другим плагином). Если не удалось занять пользователя - необходимо по желанию вывести сообщение пользователю и прекратить программу.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Plugin.unlock">
+<code class="descname">unlock</code><span class="sig-paren">(</span><em>user: User</em><span class="sig-paren">)</span><a class="headerlink" href="#Plugin.unlock" title="Ссылка на это определение">¶</a></dt>
+<dd><p>(Сопрограмма)
+user - это модель из БД,</p>
+<p>Освобождает пользователя для других плагинов.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Plugin.is_mine">
+<code class="descname">is_mine</code><span class="sig-paren">(</span><em>user: User</em><span class="sig-paren">)</span><a class="headerlink" href="#Plugin.is_mine" title="Ссылка на это определение">¶</a></dt>
+<dd><p>(Сопрограмма)
+user - это модель из БД,теля. Вернёт (True, «»).</p>
+<p>Возвращает True, если пользователь занят текущим плагином.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Plugin.clear">
+<code class="descname">clear</code><span class="sig-paren">(</span><em>user: User</em><span class="sig-paren">)</span><a class="headerlink" href="#Plugin.clear" title="Ссылка на это определение">¶</a></dt>
+<dd><p>(Сопрограмма)
+user - это модель из БД,теля.</p>
+<p>Выполняет unlock(user) и set_user_status(user, 0).</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Vbot</a></h1>
+
+
+
+
+
+
+
+
+<h3>Навигация</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Структура плагина</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id2">Как создать свой плагин:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">Как использовать базу данных</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">Плагины с состояниями</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Структура сообщения</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vkplus.html">Структура VkPlus</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="предыдущая глава">Документация Vbot’а</a></li>
+      <li>Next: <a href="message.html" title="следующая глава">Описание объекта сообщения</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Быстрый поиск</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Искать" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Michael Krukov, Daniil Yarantsev.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/plugin.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

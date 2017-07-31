@@ -1,0 +1,239 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ru">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Описание объекта сообщения &#8212; Документация Vbot 6.0</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="index" title="Алфавитный указатель" href="genindex.html" />
+    <link rel="search" title="Поиск" href="search.html" />
+    <link rel="next" title="Описание объекта VkPlus" href="vkplus.html" />
+    <link rel="prev" title="Описание структуры плагина" href="plugin.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="id1">
+<h1>Описание объекта сообщения<a class="headerlink" href="#id1" title="Ссылка на этот заголовок">¶</a></h1>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@plugin</span><span class="o">.</span><span class="n">on_message</span><span class="p">()</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">command</span><span class="p">(</span><span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<dl class="class">
+<dt id="Message">
+<em class="property">class </em><code class="descname">Message</code><a class="headerlink" href="#Message" title="Ссылка на это определение">¶</a></dt>
+<dd><dl class="function">
+<dt id="Message.answer">
+<code class="descname">answer</code><span class="sig-paren">(</span><em>msg: str</em>, <em>**additional_values</em><span class="sig-paren">)</span><a class="headerlink" href="#Message.answer" title="Ссылка на это определение">¶</a></dt>
+<dd><p>(Сопрограмма)
+Функция, посылающая сообщение <code class="docutils literal"><span class="pre">msg</span></code> отправителю сообщения с дополнительными параметрами <code class="docutils literal"><span class="pre">additional_values</span></code>.
+Стоит использовать в случае, когда это последнее или единственное сообщение от плагина.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Message.send">
+<code class="descname">send</code><span class="sig-paren">(</span><em>msg: str</em>, <em>**additional_values</em><span class="sig-paren">)</span><a class="headerlink" href="#Message.send" title="Ссылка на это определение">¶</a></dt>
+<dd><p>(Сопрограмма)
+Функция, посылающая сообщение <code class="docutils literal"><span class="pre">msg</span></code> отправителю сообщения с дополнительными параметрами <code class="docutils literal"><span class="pre">additional_values</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Message.vk">
+<code class="descname">vk</code><a class="headerlink" href="#Message.vk" title="Ссылка на это определение">¶</a></dt>
+<dd><p>экземпляр VkPlus, объект, через который бот взаимодействует с ВКонтакте.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Message.conf">
+<code class="descname">conf</code><a class="headerlink" href="#Message.conf" title="Ссылка на это определение">¶</a></dt>
+<dd><p>True, если сообщение пришло из беседы, иначе False</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Message.user">
+<code class="descname">user</code><a class="headerlink" href="#Message.user" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Экземпляр User из базы данных</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Message.cid">
+<code class="descname">cid</code><a class="headerlink" href="#Message.cid" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Id беседы или None, если сообщене не из беседы</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Message.user_id">
+<code class="descname">user_id</code><a class="headerlink" href="#Message.user_id" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Id автора сообщения</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Message.peer_id">
+<code class="descname">peer_id</code><a class="headerlink" href="#Message.peer_id" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Отправитель (id беседы, пользователя без разбора, лучше использовать user_id и cid)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Message.text">
+<code class="descname">text</code><a class="headerlink" href="#Message.text" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Сообщение пользователя без префикса и команды</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Message.body">
+<code class="descname">body</code><a class="headerlink" href="#Message.body" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Сообщение пользователя</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Message.prefix">
+<code class="descname">prefix</code><a class="headerlink" href="#Message.prefix" title="Ссылка на это определение">¶</a></dt>
+<dd><p>True, если сообщение содержит префикс, иначе False</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Message.is_out">
+<code class="descname">is_out</code><a class="headerlink" href="#Message.is_out" title="Ссылка на это определение">¶</a></dt>
+<dd><p>True, если сообщение исходящее, иначе False</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Message.timestamp">
+<code class="descname">timestamp</code><a class="headerlink" href="#Message.timestamp" title="Ссылка на это определение">¶</a></dt>
+<dd><p>UNIX-время отправки сообщения</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Message.brief_attaches">
+<code class="descname">brief_attaches</code><a class="headerlink" href="#Message.brief_attaches" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Индикатор вложений сообщения, содержит вложения, но не гарантировано, что все и не гарантировано, что они будут содержать access_key</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Message.full_attaches">
+<code class="descname">full_attaches</code><a class="headerlink" href="#Message.full_attaches" title="Ссылка на это определение">¶</a></dt>
+<dd><p>(Сопрограмма, атрибут)
+которая возвращает все вложения</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Message.brief_forwarded">
+<code class="descname">brief_forwarded</code><a class="headerlink" href="#Message.brief_forwarded" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Список с ID пересылаемыми сообщениями формата (id сообщения, id пересылаемых сообщении).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Message.full_forwarded">
+<code class="descname">full_forwarded</code><a class="headerlink" href="#Message.full_forwarded" title="Ссылка на это определение">¶</a></dt>
+<dd><p>(Сопрограмма, атрибут)
+Список с ID пересылаемыми сообщениями формата (id сообщения, id пересылаемых сообщении).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Message.msg_id">
+<code class="descname">msg_id</code><a class="headerlink" href="#Message.msg_id" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Id сообщения</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Message.command">
+<code class="descname">command</code><a class="headerlink" href="#Message.command" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Команда в сообщении, если присутствует</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Vbot</a></h1>
+
+
+
+
+
+
+
+
+<h3>Навигация</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="plugin.html">Структура плагина</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Структура сообщения</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vkplus.html">Структура VkPlus</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="plugin.html" title="предыдущая глава">Описание структуры плагина</a></li>
+      <li>Next: <a href="vkplus.html" title="следующая глава">Описание объекта VkPlus</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Быстрый поиск</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Искать" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Michael Krukov, Daniil Yarantsev.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/message.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

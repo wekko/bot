@@ -3,6 +3,8 @@ from random import choice
 
 from chatterbot import ChatBot
 
+from database import *
+
 
 class ConditionModel:
     def check(self, chat_data):
@@ -144,7 +146,7 @@ class Chatter:
 
         return self.dialogs.append(Dialog(*dialog))
 
-    def parse_message(self, chat_data):
+    async def parse_message(self, user, chat_data):
         for dialog in self.dialogs:
             if dialog.check(chat_data):
                 return choice(dialog.answer)
@@ -158,10 +160,17 @@ class ChatterBot:
     def __init__(self):
         self.chatbot = ChatBot(
             'Валера',
-            trainer='chatterbot.trainers.ChatterBotCorpusTrainer'
+            trainer='chatterbot.trainers.ChatterBotCorpusTrainer',
+            silence_performance_warning=True
         )
 
         self.chatbot.train("chatterbot.corpus.russian")
 
-    def parse_message(self, chat_data):
-        return str(self.chatbot.get_response(chat_data[0]))
+    async def parse_message(self, user, chat_data):
+        if not user.chatter_id or not self.chatbot.conversation_sessions.get(user.chatter_id):
+            user.chatter_id = self.chatbot.conversation_sessions.new().id
+            await db.update(user)
+
+        self.chatbot.conversation_sessions.get(user.chatter_id)
+
+        return str(self.chatbot.get_response(chat_data[0], user.chatter_id))

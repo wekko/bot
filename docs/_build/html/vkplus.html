@@ -1,0 +1,201 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ru">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Описание объекта VkPlus &#8212; Документация Vbot 6.0</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="index" title="Алфавитный указатель" href="genindex.html" />
+    <link rel="search" title="Поиск" href="search.html" />
+    <link rel="prev" title="Описание объекта сообщения" href="message.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="vkplus">
+<h1>Описание объекта VkPlus<a class="headerlink" href="#vkplus" title="Ссылка на этот заголовок">¶</a></h1>
+<dl class="class">
+<dt id="VkPlus">
+<em class="property">class </em><code class="descname">VkPlus</code><a class="headerlink" href="#VkPlus" title="Ссылка на это определение">¶</a></dt>
+<dd><dl class="function">
+<dt id="VkPlus.method">
+<code class="descname">method</code><span class="sig-paren">(</span><em>method: str</em>, <em>**values</em>, <em>send_from=None</em>, <em>nowait=False</em><span class="sig-paren">)</span><a class="headerlink" href="#VkPlus.method" title="Ссылка на это определение">¶</a></dt>
+<dd><p>(Сопрограмма)
+Выполняет метод <code class="docutils literal"><span class="pre">method</span></code> API ВКонтакте (например, «messages.get») с параметрами <code class="docutils literal"><span class="pre">values</span></code> (например, {«count»: 2}), в <code class="docutils literal"><span class="pre">send_from</span></code> можно передать SenderGroup или SenderUser, чтобы уточнить, кто должен выполнять команду, если <code class="docutils literal"><span class="pre">nowait=True</span></code>, то method не вернёт результат запроса к вк, а продолжит пограмму без ожидания ответа.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="VkPlus.upload_doc">
+<code class="descname">upload_doc</code><span class="sig-paren">(</span><em>multipart_data</em>, <em>filename=&quot;image.png&quot;</em><span class="sig-paren">)</span><a class="headerlink" href="#VkPlus.upload_doc" title="Ссылка на это определение">¶</a></dt>
+<dd><p>(Сопрограмма)
+Загружает <code class="docutils literal"><span class="pre">multipart_data</span></code> с именем <code class="docutils literal"><span class="pre">filename</span></code> и возвращает Attachment.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="VkPlus.upload_photo">
+<code class="descname">upload_photo</code><span class="sig-paren">(</span><em>multipart_data</em><span class="sig-paren">)</span><a class="headerlink" href="#VkPlus.upload_photo" title="Ссылка на это определение">¶</a></dt>
+<dd><p>(Сопрограмма)
+Загружает фото <code class="docutils literal"><span class="pre">multipart_data</span></code> и возвращает Attachment.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="VkPlus.mark_as_read">
+<code class="descname">mark_as_read</code><span class="sig-paren">(</span><em>ids: str</em><span class="sig-paren">)</span><a class="headerlink" href="#VkPlus.mark_as_read" title="Ссылка на это определение">¶</a></dt>
+<dd><p>(Сопрограмма)
+Помечает сообщения с <code class="docutils literal"><span class="pre">ids</span></code> как прочитанные.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="VkPlus.resolve_name">
+<code class="descname">resolve_name</code><span class="sig-paren">(</span><em>screen_name: str</em><span class="sig-paren">)</span><a class="headerlink" href="#VkPlus.resolve_name" title="Ссылка на это определение">¶</a></dt>
+<dd><p>(Сопрограмма)
+Перевод короткого имени <cite>screen_name</cite> в числовой ID.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="VkPlus.get_default_sender">
+<code class="descname">get_default_sender</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#VkPlus.get_default_sender" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Возвращает подходящего (на сколько это возможно) отправителя для метода <cite>key</cite>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<code class="descname">Attachment(token_id):</code></dt>
+<dd><dl class="attribute">
+<dt id="type">
+<code class="descname">type</code><a class="headerlink" href="#type" title="Ссылка на это определение">¶</a></dt>
+<dd></dd></dl>
+
+<p>Тип вложения (photo, video, audio, doc, link, market, market_album, wall, wall_reply, sticker или gift).</p>
+<dl class="attribute">
+<dt id="owner_id">
+<code class="descname">owner_id</code><a class="headerlink" href="#owner_id" title="Ссылка на это определение">¶</a></dt>
+<dd></dd></dl>
+
+<p>ID владельца вложения.</p>
+<dl class="attribute">
+<dt id="id">
+<code class="descname">id</code><a class="headerlink" href="#id" title="Ссылка на это определение">¶</a></dt>
+<dd></dd></dl>
+
+<p>ID вложения.</p>
+<dl class="attribute">
+<dt id="access_key">
+<code class="descname">access_key</code><a class="headerlink" href="#access_key" title="Ссылка на это определение">¶</a></dt>
+<dd></dd></dl>
+
+<p>access_key вложения, если присутствует.</p>
+<dl class="attribute">
+<dt id="url">
+<code class="descname">url</code><a class="headerlink" href="#url" title="Ссылка на это определение">¶</a></dt>
+<dd></dd></dl>
+
+<p>Сслыка на вложение, если присутствует.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<code class="descname">SenderGroup(token_id):</code></dt>
+<dd><p>Какой токен должен выполнять запрос, <code class="docutils literal"><span class="pre">token_id</span></code> - это порядковый номер в текущем списке групповых личностей бота.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<code class="descname">SenderUser(token_id):</code></dt>
+<dd><p>Какой пользователь должен выполнять запрос, <code class="docutils literal"><span class="pre">user_id</span></code> - это порядковый номер в текущем списке пользовательских личностей бота.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Vbot</a></h1>
+
+
+
+
+
+
+
+
+<h3>Навигация</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="plugin.html">Структура плагина</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Структура сообщения</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Структура VkPlus</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="message.html" title="предыдущая глава">Описание объекта сообщения</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Быстрый поиск</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Искать" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Michael Krukov, Daniil Yarantsev.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/vkplus.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

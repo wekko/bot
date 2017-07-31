@@ -1,5 +1,7 @@
 hues  # Логгирование с указанием времени и цвета
 
+requests  # Синхронные HTTP Запросы
+
 aiohttp # Асинхронные HTTP запросы
 peewee # Запросы к БД
 
@@ -16,3 +18,6 @@ Pillow  # Работа с изображениями
 
 xmltodict  # Работа с XML
 chatterbot # Чат-бот
+
+python-dateutil  # Работа с датами
+qrcode  # Работа с QR кодами

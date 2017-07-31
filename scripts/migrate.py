@@ -27,6 +27,9 @@ def migrate1(migrator):
         migrator.drop_column(BotStatus._meta.db_table, 'mail_data'),
         migrator.drop_column(User._meta.db_table, 'do_not_disturb'),
         migrator.drop_column(User._meta.db_table, 'memory'),
+        migrator.add_column(User._meta.db_table, 'chatter_id', peewee.TextField(null=True)),
+        migrator.add_column(User._meta.db_table, 'status', peewee.TextField(default="")),
+        migrator.add_column(User._meta.db_table, 'status_locked_message', peewee.TextField(null=True)),
     )
 
 if __name__ == '__main__':
