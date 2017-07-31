@@ -98,7 +98,7 @@ class Bot(object):
 
         self.vk_init()
 
-        if sys.argv and "-nu" not in sys.argv:
+        if sys.argv and "-nu" in sys.argv:
             self.plugin_download()
             self.plugin_clear()
 
@@ -139,6 +139,9 @@ class Bot(object):
 
     @staticmethod
     def plugin_download():
+        if not os.path.exists("plugins"):
+            os.mkdir("plugins")
+
         hues.info("Обновление и загрузка плагинов...")
 
         base = f"https://myzon.github.io/vbot-plugins"
