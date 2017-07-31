@@ -99,7 +99,7 @@ class Bot(object):
         self.vk_init()
 
         if sys.argv and "-nu" in sys.argv:
-            self.plugin_download()
+            self.plugin_download(f"https://vkbots.github.io/vbot-plugins")
             self.plugin_clear()
 
             if sys.argv and "-ou" in sys.argv:
@@ -138,13 +138,13 @@ class Bot(object):
                 shutil.rmtree(f"plugins/{file}")
 
     @staticmethod
-    def plugin_download():
+    def plugin_download(repository_url):
         if not os.path.exists("plugins"):
             os.mkdir("plugins")
 
         hues.info("Обновление и загрузка плагинов...")
 
-        base = f"https://vkbots.github.io/vbot-plugins"
+        base = repository_url
 
         for i in requests.get(f"{base}/dir").text.splitlines():
             file_type, file_name = i.split(";")
