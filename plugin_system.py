@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from importlib import machinery, util
 from os.path import isfile
 
+import settings
 from database import *
 
 try:
@@ -177,7 +178,15 @@ class Plugin(object):
         def decorator(func):
             wrapper = self.status_wrapper(func, status)
 
-            self.add_func("", wrapper)
+            if settings.READ_OUT:
+                async def wrapper_twice(*args, **kwargs):
+                    if args and hasattr(args[0], "is_out") and not args[0].is_out:
+                        return await wrapper(*args, **kwargs)
+
+            else:
+                wrapper_twice = wrapper
+
+            self.add_func("", wrapper_twice)
 
             return wrapper
 
@@ -344,6 +353,11 @@ class PluginSystem(object):
                     full_plugin_path = os.path.join(folder_path, filename)
                     base_plugin_path = os.path.relpath(full_plugin_path, self.folder)
                     base_plugin_name = os.path.splitext(base_plugin_path)[0].replace(os.path.sep, '.')
+
+                    if base_plugin_name in settings.DISABLED_PLUGINS or \
+                       ("all" not in settings.ENABLED_PLUGINS and base_plugin_name not in settings.ENABLED_PLUGINS):
+                        continue
+
                     try:
                         loader = machinery.SourceFileLoader(base_plugin_name, full_plugin_path)
                         spec = util.spec_from_loader(loader.name, loader)

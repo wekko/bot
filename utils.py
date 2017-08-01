@@ -4,6 +4,7 @@ import datetime
 import html
 import os
 from configparser import ConfigParser
+from enum import Enum
 from typing import Iterator, Coroutine, Iterable
 
 import hues
@@ -30,6 +31,12 @@ class SenderUser:
 
     def __init__(self, target):
         self.target = target
+
+
+class Wait(Enum):
+    NO = 0
+    YES = 1
+    CUSTOM = 2
 
 
 class Attachment(object):

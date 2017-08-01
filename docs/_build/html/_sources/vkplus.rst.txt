@@ -5,10 +5,14 @@
 
 .. py:class:: VkPlus
 
-    .. py:function:: method(method: str, \*\*values, send_from=None, nowait=False)
+    .. py:function:: method(method: str, \*\*values, send_from=None, wait: Wait=Wait.YES)
 
        (Сопрограмма)
-       Выполняет метод ``method`` API ВКонтакте (например, "messages.get") с параметрами ``values`` (например, {"count": 2}), в ``send_from`` можно передать SenderGroup или SenderUser, чтобы уточнить, кто должен выполнять команду, если ``nowait=True``, то method не вернёт результат запроса к вк, а продолжит пограмму без ожидания ответа.
+       Выполняет метод ``method`` API ВКонтакте (например, "messages.get") с параметрами ``values`` (например, {"count": 2}), в ``send_from`` можно передать SenderGroup или SenderUser, чтобы уточнить, кто должен выполнять команду.
+
+       Если ``nowait=Wait.NO``, то method не вернёт результат запроса к вк, а продолжит пограмму без ожидания ответа.
+       Если ``nowait=Wait.YES``, то method вернёт результат запроса к вк, дождавшись ответа.
+       Если ``nowait=Wait.CUSTOM``, то method не вернёт `Future`, результатом которого будет результат запроса.
 
     .. py:function:: upload_doc(multipart_data, filename="image.png")
 

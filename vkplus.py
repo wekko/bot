@@ -12,7 +12,7 @@ import settings
 from database import *
 from methods import is_available_from_group
 from methods import is_available_from_public
-from utils import chunks, Attachment, RequestFuture, SenderGroup, SenderUser
+from utils import chunks, Attachment, RequestFuture, SenderGroup, SenderUser, Wait
 from vkapi import VkClient
 
 solver = None
@@ -116,7 +116,7 @@ class VkPlus(object):
 
                 self.users.append(client)
 
-    async def method(self, key: str, data=None, send_from=None, nowait=False):
+    async def method(self, key: str, data=None, send_from=None, wait=Wait.YES):
         """Выполнение метода API VK с дополнительными параметрами"""
         if send_from is None:
             send_from = self.get_default_sender(key)
@@ -140,15 +140,19 @@ class VkPlus(object):
 
         client.queue.put_nowait(task)
 
-        if nowait:
+        if wait == Wait.NO:
             return None
 
-        try:
-            return await asyncio.wait_for(task, None)
-        except Exception as e:
-            import traceback
-            hues.error("Запрос к вк завершился с ошибкой")
-            traceback.print_exc()
+        elif wait == Wait.YES:
+            try:
+                return await asyncio.wait_for(task, 90)
+            except Exception as e:
+                import traceback
+                hues.error("Запрос к вк завершился с ошибкой")
+                traceback.print_exc()
+
+        elif wait == Wait.CUSTOM:
+            return task
 
     async def upload_doc(self, multipart_data: BinaryIO, filename="image.png") -> Optional[Attachment]:
         sender = self.get_default_sender("docs.getWallUploadServer")
@@ -425,7 +429,7 @@ class Message(object):
 
         await self.answer(msg, **additional_values)
 
-    async def answer(self, msg: str, **additional_values) -> None:
+    async def answer(self, msg: str, wait=Wait.NO, **additional_values) -> List:
         """Функция ответа на сообщение для плагинов"""
         if len(msg) > MAX_MESSAGE_LENGTH:  # Если сообщение слишком длинное - делим его на несколько коротких сообщений
             msgs = list(chunks(msg, MAX_MESSAGE_LENGTH))
@@ -446,6 +450,8 @@ class Message(object):
             def post_process(*args):
                 pass
 
+        result = []
+
         for i in range(len(msgs)):  # Отправляем каждое сообщение из списка
             msg = msgs[i]
 
@@ -453,7 +459,11 @@ class Message(object):
 
             post_process(i, values)
 
-            await self.vk.method('messages.send', values, send_from=sender, nowait=True)
+            r = await self.vk.method('messages.send', values, send_from=sender, wait=wait)
+
+            result.append(r)
+
+        return result
 
 
 async def create_message(vk_api_object: VkPlus, data: MessageEventData, user: User) -> Message:
