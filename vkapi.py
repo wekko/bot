@@ -56,7 +56,7 @@ class VkClient:
                 await asyncio.sleep(settings.REQUEST_INTERVAL)
                 self.requests = 0
 
-            await asyncio.sleep(0)
+            await asyncio.sleep(0.1)
 
     async def process_queue(self):
         while True:
