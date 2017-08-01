@@ -298,7 +298,8 @@ class PluginSystem(object):
 
     async def command_wrapper(self, func, *args, **kwargs):
         for b in self.before_command:
-            await b[0](*args, **kwargs)
+            if await b[0](*args, **kwargs) is False:
+                return None
 
         result = await func(*args, **kwargs)
 
