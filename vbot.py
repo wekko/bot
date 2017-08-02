@@ -5,8 +5,6 @@ from os.path import abspath, isfile
 
 import requests
 
-from utils import *
-
 
 def check_settings():
     """Создаём файл настроек, если надо и загружаем бота, если всё хорошо."""
@@ -63,18 +61,22 @@ def check_settings():
             settings.DISABLED_PLUGINS = [p for p in settings.DISABLED_PLUGINS if p != "default_utils"]
 
             if not settings.USERS:
-                fatal("Проверьте, что у есть LOGIN и PASSWORD, или же TOKEN в файле settings.py!"
-                      "Без них бот работать НЕ СМОЖЕТ.")
+                hues.error("Проверьте, что у есть LOGIN и PASSWORD, или же TOKEN в файле settings.py!"
+                           "Без них бот работать НЕ СМОЖЕТ.")
+                exit()
 
         except (ValueError, AttributeError, NameError):
-            fatal('Проверьте содержимое файла settings.py, возможно вы удалили что-то нужное!')
+            hues.error('Проверьте содержимое файла settings.py, возможно вы удалили что-то нужное!')
+            exit()
     # Если не нашли ни settings.py, ни settings.py.sample
     else:
-        fatal("settings.py и settings.py.sample не найдены, возможно вы их удалили?")
+        hues.error("settings.py и settings.py.sample не найдены, возможно вы их удалили?")
+        exit()
 
 
 check_settings()
 
+from utils import *
 from chat.chatter import normalize, ChatterBot
 from command import Command
 from plugin_system import PluginSystem
