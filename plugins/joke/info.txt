@@ -1,0 +1,5 @@
+1.0
+6.0
+Случайный анекдот
+Вывод случайного анекдота
+TiberiumN (https://github.com/TiberiumN);Myzon (https://github.com/Myzon)

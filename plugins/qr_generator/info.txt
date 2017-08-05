@@ -1,0 +1,5 @@
+1.0
+6.0
+Генерация QR кода
+Генерация QR кода с текстом пользователя
+Myzon (https://github.com/Myzon);  GabbHack (https://gbhk.ga)
