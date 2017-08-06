@@ -11,15 +11,17 @@ plugin = Plugin('Узнать кто находится в беседе',
 async def init(vk):
     plugin.temp_data = load_settings(plugin)
 
+emojis = ['😏', '😄', '😠', '😆', '🤐', '😝', '🤔', '😎', '😐', '🙁',
+          '😨', '🤔', '😠', '😝', '😘', '😗', '😙', '😙', '😟']
+
 @plugin.on_command('кто здесь', 'ктоздесь')
-async def whoishere(msg, args):
-    users = ""
-    emojis = ['😏', '😄', '😠', '😆', '🤐', '😝', '🤔', '😎', '😐', '🙁',
-              '😨', '🤔', '😠', '😝', '😘', '😗', '😙', '😙', '😟']
-    try:
+async def who_is_here(msg, args):
+    if msg.conf:
         all_users = await msg.vk.method("messages.getChatUsers", {'chat_id': msg.cid, 'fields': 'name,online'})
 
         random.seed(msg.cid)
+
+        users = ""
 
         for user in all_users:
             if await get_or_none(Role, user_id=user['id'], role="admin"):
@@ -40,6 +42,6 @@ async def whoishere(msg, args):
         else:
             await msg.answer(f'👽 Сейчас в беседе:\n' + users)
 
-    except TypeError:
+    else:
         await msg.answer("Эту команду можно использовать только в беседе.")
 

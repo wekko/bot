@@ -10,11 +10,11 @@ async def is_search(msg, args):
     if not args:
         return await msg.answer("Используй кто <текст>")
 
-    try:
+    if msg.conf:
         users = await msg.vk.method('messages.getChatUsers', {'chat_id': msg.cid, 'fields': 'name'})
         user = choice(users)
 
         await msg.answer(f"{msg.text}? Я думаю, это {user['first_name']} {user['last_name']} 🙈")
 
-    except TypeError:
+    else:
         await msg.answer("Эту команду надо использовать только в беседе.")
