@@ -21,7 +21,7 @@ False - нет, True - да
 # # # по очереди от разных аккаунтов).
 USERS = (
         # ("TOKEN",),
-        # ("LOGIN", "PASSWORD"),
+        # ("aqvaveko@yandex.ru", "weko159753"),
 )
 # Прокси для подключения к VK API с помощью данных из USERS
 PROXIES = (
